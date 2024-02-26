@@ -27,11 +27,18 @@ player_rect = player_img.get_rect(midbottom=(80, 300))
 # Snail
 SNAIL_SPEED = 2
 SPAWN_INTERVAL = 2 # spawn an enemy at every interval
-snail_img = pygame.image.load('graphics/snail/snail1.png').convert_alpha()
+OBTACLE_ANIMATION_TRANSITION = 0.05
+snail_images = [
+    pygame.image.load('graphics/snail/snail1.png').convert_alpha(),
+    pygame.image.load('graphics/snail/snail2.png').convert_alpha()
+]
 
 # Flies
 OBSTACLE_SPEED = 2
-fly_img = pygame.image.load('graphics/Fly/Fly1.png').convert_alpha()
+fly_images = [
+    pygame.image.load('graphics/Fly/Fly1.png').convert_alpha(),
+    pygame.image.load('graphics/Fly/Fly2.png').convert_alpha()
+]
 
 obstacles = []
 
@@ -41,16 +48,21 @@ current_time = pygame.time.get_ticks() / 1000
 initial_time = pygame.time.get_ticks() / 1000
 
 class Obstacle:
-    def __init__(self, img, screen, height):
-        self.img = img
+    def __init__(self, screen, height, images):
+        self.images = images
         self.screen = screen
-        self.rect = img.get_rect(midbottom=(random.randint(800, 950), height))
+        self.rect = images[0].get_rect(midbottom=(random.randint(800, 950), height))
+        self.current_img_idx = 0
 
     def update(self):
         self.rect.x -= OBSTACLE_SPEED
 
     def render(self):
-        self.screen.blit(self.img, self.rect)
+        self.current_img_idx = self.current_img_idx + OBTACLE_ANIMATION_TRANSITION
+        if self.current_img_idx >= (len(self.images) - 1):
+            self.current_img_idx = 0
+
+        self.screen.blit(self.images[round(self.current_img_idx)], self.rect)
 
 while True:
     for event in pygame.event.get():
@@ -69,20 +81,23 @@ while True:
         enemy_type = random.choice(['fly', 'snail'])
         new_obstacle = None
         if enemy_type == 'snail':
-            new_obstacle = Obstacle(snail_img, screen, 300)
+            new_obstacle = Obstacle(screen, 300, snail_images)
         else:
-            new_obstacle = Obstacle(fly_img, screen, 200)
+            new_obstacle = Obstacle(screen, 200, fly_images)
         
         obstacles.append(new_obstacle)
 
+    obstacle_to_remove = None
     for obstacle in obstacles:
         if obstacle.rect.x < -200:
-            obstacles.remove(obstacle)
+            obstacle_to_remove = obstacle
         else:
             obstacle.update()
             obstacle.render()
+    
+    if obstacle_to_remove:
+        obstacles.remove(obstacle_to_remove) 
             
-    print(len(obstacles))
     pygame.display.update()
 
     clock.tick(FPS)
