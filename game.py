@@ -5,7 +5,7 @@
 import pygame
 import sys
 import random
-
+from objects.obstacle import Obstacle
 FPS = 60
 
 pygame.init()
@@ -17,24 +17,18 @@ pygame.display.set_caption("Jumper Game")
 ground_img = pygame.image.load('graphics/Ground.png').convert()
 sky_img = pygame.image.load('graphics/Sky.png').convert()
 
-# Player image
-player_img = pygame.image.load('graphics/Player/player_walk_1.png').convert_alpha()
-# mid of the picture is at 80
-# bottom of the pic  is at 300 
-# this makes the calculations taking into account the image sizes.
-player_rect = player_img.get_rect(midbottom=(80, 300))
+player_images = [
+    pygame.image.load('graphics/Player/player_stand.png').convert_alpha(),
+    pygame.image.load('graphics/Player/player_walk_1.png').convert_alpha(),
+    pygame.image.load('graphics/Player/player_walk_2.png').convert_alpha(),
+    pygame.image.load('graphics/Player/jump.png').convert_alpha()
+]
 
-# Snail
-SNAIL_SPEED = 2
-SPAWN_INTERVAL = 2 # spawn an enemy at every interval
-OBTACLE_ANIMATION_TRANSITION = 0.05
 snail_images = [
     pygame.image.load('graphics/snail/snail1.png').convert_alpha(),
     pygame.image.load('graphics/snail/snail2.png').convert_alpha()
 ]
 
-# Flies
-OBSTACLE_SPEED = 2
 fly_images = [
     pygame.image.load('graphics/Fly/Fly1.png').convert_alpha(),
     pygame.image.load('graphics/Fly/Fly2.png').convert_alpha()
@@ -47,36 +41,54 @@ clock = pygame.time.Clock()
 current_time = pygame.time.get_ticks() / 1000
 initial_time = pygame.time.get_ticks() / 1000
 
-class Obstacle:
-    def __init__(self, screen, height, images):
-        self.images = images
-        self.screen = screen
-        self.rect = images[0].get_rect(midbottom=(random.randint(800, 950), height))
-        self.current_img_idx = 0
+class Player:
+    GROUND_ELEVATION = 300
+    MAX_JUMP_HEIGTH = 50
+    INITIAL_FALL_SPEED = 1
+    GRAVITY = 0.2 
 
+    STAND     = 0
+    WALKING_1 = 1
+    WALKING_2 = 2
+    JUMP      = 3
+
+    def __init__(self, images):
+        self.images = images
+        self.jumping = False
+        self.rect = images[Player.STAND].get_rect(midbottom=(80, Player.GROUND_ELEVATION))
+        self.fall_speed = Player.INITIAL_FALL_SPEED
+ 
     def update(self):
-        self.rect.x -= OBSTACLE_SPEED
+        if self.jumping:
+            self.rect.y += self.fall_speed
+            self.fall_speed += Player.GRAVITY
+
+        if self.rect.bottom >= Player.GROUND_ELEVATION:
+            self.jumping = False
+            self.rect.bottom = Player.GROUND_ELEVATION
+            self.fall_speed = Player.INITIAL_FALL_SPEED 
 
     def render(self):
-        self.current_img_idx = self.current_img_idx + OBTACLE_ANIMATION_TRANSITION
-        if self.current_img_idx >= (len(self.images) - 1):
-            self.current_img_idx = 0
+        img = Player.JUMP if player.jumping else Player.STAND
+        screen.blit(self.images[img], self.rect)
 
-        self.screen.blit(self.images[round(self.current_img_idx)], self.rect)
-
+player = Player(player_images)
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
-    
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                player.rect.y = Player.MAX_JUMP_HEIGTH
+                player.jumping = True
+
     screen.blit(sky_img, (0, 0))
     screen.blit(ground_img, (0, 300))
-    # screen.blit(player_img, player_rect)
 
     current_time = pygame.time.get_ticks() / 1000
     time_elapsed = current_time - initial_time
 
-    if time_elapsed >= SPAWN_INTERVAL:
+    if time_elapsed >= Obstacle.SPAWN_INTERVAL:
         initial_time = current_time
         enemy_type = random.choice(['fly', 'snail'])
         new_obstacle = None
@@ -86,6 +98,9 @@ while True:
             new_obstacle = Obstacle(screen, 200, fly_images)
         
         obstacles.append(new_obstacle)
+
+    player.update()
+    player.render()
 
     obstacle_to_remove = None
     for obstacle in obstacles:
