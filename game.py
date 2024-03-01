@@ -94,9 +94,10 @@ class Player:
     def render(self):
         img_idx = None
 
-        if self.jumping:
+        if self.jumping or self.falling:
             img_idx = Player.JUMP
         elif self.is_walking():
+            # TODO: create sprite for walking walking and add it in here
             self.walking_forward_img_idx += Player.WALKING_ANIMATION_TRANSITION 
             if self.walking_forward_img_idx > Player.WALKING_FORWARD_2:
                 self.walking_forward_img_idx = Player.WALKING_FORWARD_1
