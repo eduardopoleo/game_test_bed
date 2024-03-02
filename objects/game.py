@@ -1,7 +1,7 @@
 import pygame
 import sys
 import random
-from objects.obstacle import Obstacle
+from objects.enemy import Enemy
 from objects.player import Player
 
 class Game:
@@ -33,7 +33,7 @@ class Game:
             pygame.image.load('graphics/Fly/Fly2.png').convert_alpha()
         ]
 
-        self.obstacles = []
+        self.enemies = []
         self.player = Player(self.player_images, self.screen)
 
     def run(self):
@@ -66,30 +66,30 @@ class Game:
             current_time = pygame.time.get_ticks() / 1000
             time_elapsed = current_time - initial_time
 
-            if time_elapsed >= Obstacle.SPAWN_INTERVAL:
+            if time_elapsed >= Enemy.SPAWN_INTERVAL:
                 initial_time = current_time
                 enemy_type = random.choice(['fly', 'snail'])
-                new_obstacle = None
+                new_enemy = None
                 if enemy_type == 'snail':
-                    new_obstacle = Obstacle(self.screen, 300, self.snail_images)
+                    new_enemy = Enemy(self.screen, 300, self.snail_images)
                 else:
-                    new_obstacle = Obstacle(self.screen, 200, self.fly_images)
+                    new_enemy = Enemy(self.screen, 200, self.fly_images)
 
-                self.obstacles.append(new_obstacle)
+                self.enemies.append(new_enemy)
 
             player.update()
             player.render()
 
-            obstacle_to_remove = None
-            for obstacle in self.obstacles:
-                if obstacle.rect.x < -200:
-                    obstacle_to_remove = obstacle
+            enemies_to_remove = None
+            for enemy in self.enemies:
+                if enemy.rect.x < -200:
+                    enemies_to_remove = enemy
                 else:
-                    obstacle.update()
-                    # obstacle.render()
+                    enemy.update()
+                    # enemy.render()
 
-            if obstacle_to_remove:
-                self.obstacles.remove(obstacle_to_remove)
+            if enemies_to_remove:
+                self.enemies.remove(enemies_to_remove)
 
             pygame.display.update()
 

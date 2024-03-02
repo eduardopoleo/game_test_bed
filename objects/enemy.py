@@ -1,9 +1,9 @@
 import random
 
-class Obstacle:
-    OBSTACLE_SPEED = 4
+class Enemy:
+    SPEED = 4
     SPAWN_INTERVAL = 2 # spawn an enemy at every interval
-    OBTACLE_ANIMATION_TRANSITION = 0.05
+    ANIMATION_TRANSITION = 0.05
 
     def __init__(self, screen, height, images):
         self.images = images
@@ -12,10 +12,10 @@ class Obstacle:
         self.current_img_idx = 0
 
     def update(self):
-        self.rect.x -= Obstacle.OBSTACLE_SPEED
+        self.rect.x -= Enemy.SPEED
 
     def render(self):
-        self.current_img_idx = self.current_img_idx + Obstacle.OBTACLE_ANIMATION_TRANSITION
+        self.current_img_idx = self.current_img_idx + Enemy.ANIMATION_TRANSITION
         if self.current_img_idx >= (len(self.images) - 1):
             self.current_img_idx = 0
 
