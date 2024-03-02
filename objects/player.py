@@ -1,74 +1,84 @@
-import math
+import pygame
 
-class Player:
+class Player(pygame.sprite.Sprite):
     GROUND_ELEVATION = 300
-    MAX_JUMP_HEIGTH = 100
-    GRAVITY = 0.5
-    WALKING_SPEED = 5
+
+    # velocity constants
+    GRAVITY = 0.4
+    WALKING_VELOCITY = 5
+    JUMP_VELOCITY = -9 
+    TERMINAL_VELOCITY = 20
+    
+    # sprite related constants
+    STAND = 0
+    WALKING_RIGHT_1 = 1
+    WALKING_RIGHT_2 = 2
+    JUMP = 3
     WALKING_ANIMATION_TRANSITION = 0.05
 
-    STAND             = 0
-    WALKING_FORWARD_1 = 1
-    WALKING_FORWARD_2 = 2
-    JUMP              = 3
-
-    def __init__(self, images, screen):
+    def __init__(self, images, screen, obstacles):
+        super().__init__()
         self.images = images
-        self.jumping = False
-        self.falling = False
         self.screen = screen
-        self.walking_forward = False
-        self.walking_backwards = False
+        self.obstacles = obstacles
+        self.direction = [0, 0]
+        self.vertical_velocity = 0
         self.walking_forward_img_idx = 1
-        self.walking_backwards_img_idx = 0
+        self.image = images[Player.STAND]
         self.rect = images[Player.STAND].get_rect(midbottom=(80, Player.GROUND_ELEVATION))
-
+        self.old_rect = self.rect.copy()
+ 
     def update(self):
-        if self.jumping:
-            current_speed = math.sqrt(2 * Player.GRAVITY * (self.rect.bottom - Player.MAX_JUMP_HEIGTH))
-            if current_speed == 0:
-                self.jumping = False
-                self.falling = True
-                # To make things consistent the descent process is also dependent on the MAX_JUMP_HEIGTH
-                # We need to kick off the descending process from here so that the substraction below
-                # does not always stays at 0
-                self.rect.bottom = Player.MAX_JUMP_HEIGTH + 1
-                return
+        self.old_rect = self.rect.copy()
 
-            self.rect.y -= current_speed
+        self.rect.y += self.vertical_velocity
+        self.vertical_velocity = self.vertical_velocity + Player.GRAVITY
+        self.rect.x += self.direction[0] * self.WALKING_VELOCITY
 
-        if self.falling:
-            current_speed = math.sqrt(2 * Player.GRAVITY * (self.rect.bottom - Player.MAX_JUMP_HEIGTH))
-            self.rect.y += current_speed
+        self.check_collisions('horizontal')
+        self.check_collisions('vertical')
 
-            if self.rect.bottom >= Player.GROUND_ELEVATION:
-                self.falling = False
-                self.rect.bottom = Player.GROUND_ELEVATION
+        self.calculate_image()
 
-        if self.is_walking():
-            self.rect.x += self.walking_direction() * Player.WALKING_SPEED
+    def check_collisions(self, direction):
+        for obstacle in self.obstacles:
+            if self.rect.colliderect(obstacle):
+                if direction == 'horizontal':
+                    if self.rect.right >= obstacle.rect.left and self.old_rect.right <= obstacle.old_rect.left: 
+                        self.rect.right = obstacle.rect.left
+                    elif self.rect.left <= obstacle.rect.right and self.old_rect.left >= obstacle.old_rect.right:
+                        self.rect.left = obstacle.rect.right
+                if direction == 'vertical':
+                    if self.rect.top <= obstacle.rect.bottom and self.old_rect.top >= obstacle.old_rect.bottom:
+                        self.rect.top = obstacle.rect.bottom
+                        self.direction[1] = 1
+                        self.vertical_velocity = 0
+                    elif self.rect.bottom >= obstacle.rect.top and self.old_rect.bottom <= obstacle.old_rect.top:
+                        self.rect.bottom = obstacle.rect.top
+                        self.direction[1] = 0
+                        self.vertical_velocity = 0 
 
-    def render(self):
+    def calculate_image(self):
         img_idx = None
 
-        if self.jumping or self.falling:
+        if self.moving_vertically():
             img_idx = Player.JUMP
-        elif self.is_walking():
-            # TODO: create sprite for walking walking and add it in here
+        elif self.moving_horizontally():
             self.walking_forward_img_idx += Player.WALKING_ANIMATION_TRANSITION 
-            if self.walking_forward_img_idx > Player.WALKING_FORWARD_2:
-                self.walking_forward_img_idx = Player.WALKING_FORWARD_1
+            if self.walking_forward_img_idx > Player.WALKING_RIGHT_2:
+                self.walking_forward_img_idx = Player.WALKING_RIGHT_1
             img_idx = round(self.walking_forward_img_idx)
         else:
             img_idx = Player.STAND
 
-        self.screen.blit(self.images[img_idx], self.rect)
+        self.image = self.images[img_idx]
 
-    def walking_direction(self):
-        return self.walking_forward - self.walking_backwards
+    def start_jump(self):
+        self.vertical_velocity = Player.JUMP_VELOCITY
+        self.direction[1] = -1
 
-    def is_walking(self):
-        # the only ways this is true is if both walking_backwards and forward are
-        # different 
-        return self.walking_direction() != 0
+    def moving_horizontally(self):
+        return self.direction[0] != 0
 
+    def moving_vertically(self):
+        return self.direction[1] != 0
