@@ -1,8 +1,9 @@
 # TODO:
-# make the snail move to the left 
-# Add jump and gravity
-# remap this cgn to something a bit easier 
-# set list by default in neovim config
+# Remove the usage of silly sprites and make everything lists
+# Remove the pictures and make eveything based on blocks
+# Calculate the collissions between enemies and player
+# Tiles
+# Camera 
 
 import pygame
 import sys
@@ -43,31 +44,42 @@ class Game:
 
         self.enemies = []
 
-        self.obstacles = pygame.sprite.Group()  
+        self.obstacles = []
 
         ground = Obstacle(self.screen, self.ground_img, (0, 300))
         print(f"ground {ground.rect}")
-        self.obstacles.add(ground)
+        self.obstacles.append(ground)
 
         platform_img1 = pygame.Surface((200, 50))
         platform_img1.fill((255, 0, 0))
-        platform1 = Obstacle(self.screen, platform_img1, (400, 200))
-        self.obstacles.add(platform1)
+        platform1 = Obstacle(self.screen, platform_img1, (150, 200))
+        self.obstacles.append(platform1)
 
         platform_img2 = pygame.Surface((200, 50))
         platform_img2.fill((255, 0, 0))
-        platform2 = Obstacle(self.screen, platform_img2, (400, 50))
-        self.obstacles.add(platform2)
+        platform2 = Obstacle(self.screen, platform_img2, (150, 50))
+        self.obstacles.append(platform2)
+
+        pipe1_img = pygame.Surface((50, 100))
+        pipe1_img.fill((255, 0, 0))
+        pipe1 = Obstacle(self.screen, pipe1_img, (400, 200))
+        self.obstacles.append(pipe1)
+
+        pipe2_img = pygame.Surface((50, 100))
+        pipe2_img.fill((255, 0, 0))
+        pipe2 = Obstacle(self.screen, pipe2_img, (700, 200))
+        self.obstacles.append(pipe2)
 
         self.player = Player(self.player_images, self.screen, self.obstacles)
-        self.player_group = pygame.sprite.GroupSingle()
-        self.player_group.add(self.player)
+        self.enemies = []
+
+        enemy = Enemy(self.screen, self.snail_images, self.obstacles + [self.player])
+        self.enemies.append(enemy)
+
+        self.player.obstacles.append(enemy)
 
     def run(self):
         clock = pygame.time.Clock()
-
-        current_time = pygame.time.get_ticks() / 1000
-        initial_time = pygame.time.get_ticks() / 1000
 
         while True:
             for event in pygame.event.get():
@@ -92,33 +104,17 @@ class Game:
                         self.player.direction[0] += 1
 
             self.screen.blit(self.sky_img, (0, 0))
-            # self.obstacles.draw(self.screen)
 
-            current_time = pygame.time.get_ticks() / 1000
-            time_elapsed = current_time - initial_time
+            self.player.update()
+            self.player.render()
 
-            if time_elapsed >= Enemy.SPAWN_INTERVAL:
-                initial_time = current_time
-                enemy_type = random.choice(['fly', 'snail'])
-                new_enemy = None
-                if enemy_type == 'snail':
-                    new_enemy = Enemy(self.screen, 300, self.snail_images)
-                else:
-                    new_enemy = Enemy(self.screen, 200, self.fly_images)
-
-                self.enemies.append(new_enemy)
-
-            self.player_group.update()
-            self.player_group.draw(self.screen)
-            self.obstacles.draw(self.screen)
+            for obstacle in self.obstacles:
+                obstacle.render()
 
             for enemy in self.enemies:
-                if enemy.rect.x < -200:
-                    enemies_to_remove = enemy
-                else:
-                    enemy.update()
-                    # enemy.render()
- 
+                enemy.update()
+                enemy.render()
+
             pygame.display.update()
 
             clock.tick(Game.FPS)

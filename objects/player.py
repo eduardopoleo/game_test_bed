@@ -1,6 +1,6 @@
 import pygame
 
-class Player(pygame.sprite.Sprite):
+class Player:
     GROUND_ELEVATION = 300
 
     # velocity constants
@@ -38,8 +38,6 @@ class Player(pygame.sprite.Sprite):
         self.check_collisions('horizontal')
         self.check_collisions('vertical')
 
-        self.calculate_image()
-
     def check_collisions(self, direction):
         for obstacle in self.obstacles:
             if self.rect.colliderect(obstacle):
@@ -57,8 +55,7 @@ class Player(pygame.sprite.Sprite):
                         self.rect.bottom = obstacle.rect.top
                         self.direction[1] = 0
                         self.vertical_velocity = 0 
-
-    def calculate_image(self):
+    def render(self):
         img_idx = None
 
         if self.moving_vertically():
@@ -72,6 +69,9 @@ class Player(pygame.sprite.Sprite):
             img_idx = Player.STAND
 
         self.image = self.images[img_idx]
+
+        self.screen.blit(self.image, (self.rect.x, self.rect.y))
+
 
     def start_jump(self):
         self.vertical_velocity = Player.JUMP_VELOCITY
