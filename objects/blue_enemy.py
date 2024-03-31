@@ -33,5 +33,5 @@ class BlueEnemy:
                if collisions['left']:
                     self.direction[0] = 1
                
-    def render(self):
-        self.screen.blit(self.image, self.rect)
+    def render(self, offset):
+        self.screen.blit(self.image, (self.rect.x - offset.x, self.rect.y - offset.y))

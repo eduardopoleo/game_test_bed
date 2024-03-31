@@ -58,14 +58,14 @@ class Player:
                         self.invincibility_start_time = pygame.time.get_ticks()
                         self.invincible = True
  
-    def render(self):
+    def render(self, offset):
         if self.invincible:
             self.invincibility_frame_state += Player.INVISIBILITY_FRAME_TRANSITION
             if  self.invincibility_frame_state >= 1:
                 self.invincibility_frame_state = 0
-                self.screen.blit(self.image, (self.rect.x, self.rect.y))
+                self.screen.blit(self.image, (self.rect.x - offset.x, self.rect.y - offset.y))
         else:
-            self.screen.blit(self.image, (self.rect.x, self.rect.y))
+            self.screen.blit(self.image, (self.rect.x - offset.x, self.rect.y - offset.y))
 
     def start_jump(self):
         self.vertical_velocity = Player.JUMP_VELOCITY

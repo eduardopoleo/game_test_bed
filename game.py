@@ -17,7 +17,7 @@ from objects.obstacle import Obstacle
 class CenterCamera:
     def __init__(self, sprites, player):
         self.sprites = sprites
-        self.player = player
+        self.player = player 
         self.offset = pygame.math.Vector2()
         self.display = pygame.display.get_surface()
 
@@ -28,13 +28,9 @@ class CenterCamera:
         self.offset.x = self.player.rect.centerx - display_center_x
         self.offset.y = self.player.rect.centery - display_center_y
 
-        self.player.update()
-        self.player.render()
-
         for sprite in self.sprites:
             sprite.update()
-            sprite.rect.center -= self.offset
-            sprite.render()
+            sprite.render(self.offset)
 
 class Game:
     FPS = 60
@@ -93,8 +89,7 @@ class Game:
         self.enemies = []
         self.enemies = [green_enemy, blue_enemy]
 
-        self.display = pygame.display.get_surface()
-        player_img = pygame.Surface((self.display.get_width() // 2, self.display.get_height() // 2))
+        player_img = pygame.Surface((60, 80))
         player_img.fill((218, 160, 109))
         self.player = Player(player_img, self.screen) 
         self.player.enemies = self.enemies
@@ -136,10 +131,6 @@ class Game:
             self.camera.update()
 
             pygame.display.update()
-
-            print(f'player {self.player.rect.center}')
-            print(f'center y {self.display.get_height() // 2}')
-            print(f'center x {self.display.get_width() // 2}')
 
             clock.tick(Game.FPS)
 

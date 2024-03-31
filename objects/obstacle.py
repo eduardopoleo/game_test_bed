@@ -7,8 +7,8 @@ class Obstacle:
         self.rect = image.get_rect(topleft=coordinates)
         self.old_rect = self.rect.copy()
 
-    def render(self):
-        self.screen.blit(self.image, (self.rect.x, self.rect.y))
+    def render(self, offset):
+        self.screen.blit(self.image, (self.rect.x - offset.x, self.rect.y - offset.y))
 
     def update(self):
         pass

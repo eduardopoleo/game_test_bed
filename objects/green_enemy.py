@@ -36,7 +36,7 @@ class GreenEnemy:
             if self.rect.colliderect(self.player) and top_collides(self, self.player):
                 self.dead = True
     
-    def render(self):
-        self.screen.blit(self.image, self.rect)
 
-
+    def render(self, offset):
+        self.screen.blit(self.image, (self.rect.x - offset.x, self.rect.y - offset.y))
+    
