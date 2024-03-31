@@ -13,6 +13,29 @@ from objects.blue_enemy import BlueEnemy
 from objects.player import Player
 from objects.obstacle import Obstacle
 
+
+class CenterCamera:
+    def __init__(self, sprites, player):
+        self.sprites = sprites
+        self.player = player
+        self.offset = pygame.math.Vector2()
+        self.display = pygame.display.get_surface()
+
+    def update(self):
+        display_center_x = self.display.get_width() // 2
+        display_center_y = self.display.get_height() // 2
+
+        self.offset.x = self.player.rect.centerx - display_center_x
+        self.offset.y = self.player.rect.centery - display_center_y
+
+        self.player.update()
+        self.player.render()
+
+        for sprite in self.sprites:
+            sprite.update()
+            sprite.rect.center -= self.offset
+            sprite.render()
+
 class Game:
     FPS = 60
     def __init__(self):
@@ -69,8 +92,9 @@ class Game:
 
         self.enemies = []
         self.enemies = [green_enemy, blue_enemy]
-        
-        player_img = pygame.Surface((60, 80))
+
+        self.display = pygame.display.get_surface()
+        player_img = pygame.Surface((self.display.get_width() // 2, self.display.get_height() // 2))
         player_img.fill((218, 160, 109))
         self.player = Player(player_img, self.screen) 
         self.player.enemies = self.enemies
@@ -78,6 +102,10 @@ class Game:
 
         blue_enemy.player = self.player
         green_enemy.player = self.player
+
+        sprites = self.enemies + self.obstacles + [self.player]
+
+        self.camera = CenterCamera(sprites, self.player)
 
     def run(self):
         clock = pygame.time.Clock()
@@ -105,18 +133,13 @@ class Game:
                         self.player.direction[0] += 1
 
             self.screen.fill((0,0,0))
-
-            self.player.update()
-            self.player.render()
-
-            for obstacle in self.obstacles:
-                obstacle.render()
-
-            for enemy in self.enemies:
-                enemy.update()
-                enemy.render()
+            self.camera.update()
 
             pygame.display.update()
+
+            print(f'player {self.player.rect.center}')
+            print(f'center y {self.display.get_height() // 2}')
+            print(f'center x {self.display.get_width() // 2}')
 
             clock.tick(Game.FPS)
 

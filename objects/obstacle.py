@@ -10,3 +10,6 @@ class Obstacle:
     def render(self):
         self.screen.blit(self.image, (self.rect.x, self.rect.y))
 
+    def update(self):
+        pass
+
