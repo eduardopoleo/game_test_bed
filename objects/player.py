@@ -36,6 +36,7 @@ class Player:
 
         exert_gravity(self)
 
+        # player rect keeps going forward as usual with the input
         self.rect.x += self.direction[0] * self.WALKING_VELOCITY
 
         self.check_collisions()
@@ -65,7 +66,12 @@ class Player:
                 self.invincibility_frame_state = 0
                 self.screen.blit(self.image, (self.rect.x - offset.x, self.rect.y - offset.y))
         else:
+            # the offset is apply to the blit method and not to the calculation itself
+            # applying the calculation itself brings issues with and creates a really jarring
+            # experience.
             self.screen.blit(self.image, (self.rect.x - offset.x, self.rect.y - offset.y))
+
+        pygame.draw.rect(self.screen, (255, 0, 0), self.rect, 2)
 
     def start_jump(self):
         self.vertical_velocity = Player.JUMP_VELOCITY

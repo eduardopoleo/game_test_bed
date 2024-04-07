@@ -28,6 +28,8 @@ class CenterCamera:
         self.offset.x = self.player.rect.centerx - display_center_x
         self.offset.y = self.player.rect.centery - display_center_y
 
+        print(f"offset {self.offset}")
+
         for sprite in self.sprites:
             sprite.update()
             sprite.render(self.offset)
@@ -48,6 +50,7 @@ class Game:
 
         ground_img = pygame.Surface((10000, 400))
         ground_img.fill((110, 38, 14))
+        # Obstacles rect won't move from the main view port because that's where they have been place initially
         ground = Obstacle(self.screen, ground_img, (0, 300))
         self.obstacles.append(ground)
 

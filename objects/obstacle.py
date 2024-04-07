@@ -9,6 +9,7 @@ class Obstacle:
 
     def render(self, offset):
         self.screen.blit(self.image, (self.rect.x - offset.x, self.rect.y - offset.y))
+        pygame.draw.rect(self.screen, (255, 0, 0), self.rect, 2)
 
     def update(self):
         pass

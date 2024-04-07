@@ -1,5 +1,5 @@
 
-import random
+import pygame
 from physics import *
 
 class BlueEnemy:
@@ -35,3 +35,4 @@ class BlueEnemy:
                
     def render(self, offset):
         self.screen.blit(self.image, (self.rect.x - offset.x, self.rect.y - offset.y))
+        pygame.draw.rect(self.screen, (255, 0, 0), self.rect, 2)
